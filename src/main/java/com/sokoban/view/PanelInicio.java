@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -22,19 +21,15 @@ import javax.swing.SwingConstants;
 
 /**
  * Pantalla de inicio: titulo, un motivo (caja sobre destino) y los botones
- * Jugar / Salir. Sigue la estetica oscura del tablero y su paleta de colores.
- * No conoce el modelo: recibe los callbacks a ejecutar (Jugar / Salir).
+ * Jugar / Niveles / Instrucciones / Salir. Usa el fondo de madera de
+ * TemaStardew, pero cada boton conserva su color distintivo (verde/azul/gris/
+ * rojo) para diferenciar las acciones de un vistazo. No conoce el modelo:
+ * recibe los callbacks a ejecutar.
  */
 public class PanelInicio extends JPanel {
 
-    private static final Color FONDO_TOP = new Color(36, 36, 36);
-    private static final Color FONDO_BOT = new Color(16, 16, 16);
-    private static final Color REJILLA = new Color(255, 255, 255, 12);
     private static final Color CAJA = new Color(174, 127, 73);
     private static final Color CAJA_BORDE = new Color(120, 86, 46);
-    private static final Color DESTINO = new Color(233, 196, 70);
-    private static final Color TITULO = new Color(233, 196, 70);
-    private static final Color SUBTITULO = new Color(185, 185, 185);
     private static final Color VERDE = new Color(84, 150, 58);
     private static final Color AZUL = new Color(52, 101, 164);
     private static final Color GRIS = new Color(95, 95, 95);
@@ -51,41 +46,37 @@ public class PanelInicio extends JPanel {
 
         JLabel titulo = new JLabel("SOKOBAN");
         titulo.setFont(new Font("SansSerif", Font.BOLD, 68));
-        titulo.setForeground(TITULO);
+        titulo.setForeground(TemaStardew.DORADO);
         gc.gridy = 1;
         gc.insets = new Insets(8, 0, 0, 0);
         add(titulo, gc);
 
         JLabel sub = new JLabel("Empujá cada caja hasta su destino");
         sub.setFont(new Font("SansSerif", Font.PLAIN, 20));
-        sub.setForeground(SUBTITULO);
+        sub.setForeground(TemaStardew.CREMA);
         gc.gridy = 2;
         gc.insets = new Insets(2, 0, 30, 0);
         add(sub, gc);
 
-        JButton jugar = crearBoton("Jugar", VERDE);
-        jugar.addActionListener(e -> alJugar.run());
+        JButton jugar = crearBoton("Jugar", VERDE, alJugar);
         gc.gridy = 3;
         gc.insets = new Insets(8, 0, 8, 0);
         add(jugar, gc);
 
-        JButton niveles = crearBoton("Niveles", AZUL);
-        niveles.addActionListener(e -> alNiveles.run());
+        JButton niveles = crearBoton("Niveles", AZUL, alNiveles);
         gc.gridy = 4;
         add(niveles, gc);
 
-        JButton instrucciones = crearBoton("Instrucciones", GRIS);
-        instrucciones.addActionListener(e -> alInstrucciones.run());
+        JButton instrucciones = crearBoton("Instrucciones", GRIS, alInstrucciones);
         gc.gridy = 5;
         add(instrucciones, gc);
 
-        JButton salir = crearBoton("Salir", ROJO);
-        salir.addActionListener(e -> alSalir.run());
+        JButton salir = crearBoton("Salir", ROJO, alSalir);
         gc.gridy = 6;
         add(salir, gc);
     }
 
-    private JButton crearBoton(String texto, Color base) {
+    private JButton crearBoton(String texto, Color base, Runnable accion) {
         JButton boton = new JButton(texto) {
             @Override
             protected void paintComponent(Graphics g0) {
@@ -101,7 +92,7 @@ public class PanelInicio extends JPanel {
                 super.paintComponent(g0);
             }
         };
-        boton.setFont(new Font("SansSerif", Font.BOLD, 24));
+        boton.setFont(new Font("SansSerif", Font.BOLD, 22));
         boton.setForeground(Color.WHITE);
         boton.setHorizontalAlignment(SwingConstants.CENTER);
         boton.setContentAreaFilled(false);
@@ -110,6 +101,7 @@ public class PanelInicio extends JPanel {
         boton.setOpaque(false);
         boton.setPreferredSize(new Dimension(300, 58));
         boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        boton.addActionListener(e -> accion.run());
         return boton;
     }
 
@@ -118,17 +110,7 @@ public class PanelInicio extends JPanel {
         super.paintComponent(g0);
         Graphics2D g = (Graphics2D) g0.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        int w = getWidth();
-        int h = getHeight();
-        g.setPaint(new GradientPaint(0, 0, FONDO_TOP, 0, h, FONDO_BOT));
-        g.fillRect(0, 0, w, h);
-        g.setColor(REJILLA);
-        for (int x = 0; x < w; x += 46) {
-            g.drawLine(x, 0, x, h);
-        }
-        for (int y = 0; y < h; y += 46) {
-            g.drawLine(0, y, w, y);
-        }
+        TemaStardew.dibujarFondoMadera(g, getWidth(), getHeight());
         g.dispose();
     }
 
@@ -152,7 +134,7 @@ public class PanelInicio extends JPanel {
             Polygon rombo = new Polygon(
                     new int[]{cx, cx + d, cx, cx - d},
                     new int[]{cy - d, cy, cy + d, cy}, 4);
-            g.setColor(DESTINO);
+            g.setColor(TemaStardew.DORADO);
             g.fillPolygon(rombo);
 
             int b = (int) (s * 0.52);
