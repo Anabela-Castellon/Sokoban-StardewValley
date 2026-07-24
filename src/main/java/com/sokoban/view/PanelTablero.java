@@ -31,6 +31,8 @@ public class PanelTablero extends JPanel {
     private static final int TILE_BASE = 72;
     /** Los items se dibujan a este porcentaje de la celda (un poco mas chicos). */
     private static final float ESCALA_ITEM = 0.95f;
+    /** Altura maxima (relativa a la celda) para sprites de entidad/item. */
+    private static final float ALTURA_MAXIMA_RELATIVA = 1.2f;
     /** Grosor del marco de piedra que rodea el tablero. */
     private static final int MARCO = 28;
     private static final Color FONDO = new Color(46, 34, 23);
@@ -160,7 +162,7 @@ public class PanelTablero extends JPanel {
     private void dibujarFicha(Graphics2D g, String clave, String etiqueta, int x, int y, int tile) {
         Image sprite = PaletaPresentacion.imagen(clave);
         if (sprite != null) {
-            g.drawImage(sprite, x, y, tile, tile, null);
+            dibujarSpriteProporcional(g, sprite, x, y, tile);
             dibujarEtiqueta(g, etiqueta, x, y, tile);
             return;
         }
@@ -177,6 +179,37 @@ public class PanelTablero extends JPanel {
             texto = String.valueOf(PaletaPresentacion.letra(clave));
         }
         dibujarEtiqueta(g, texto, x, y, tile);
+    }
+
+    /**
+     * Dibuja el sprite manteniendo su relacion de aspecto original en vez de
+     * forzarlo al cuadrado de la celda (eso es lo que aplastaba al jugador,
+     * cuyo sprite es mas alto que ancho). Se ancla en la base de la celda y se
+     * centra horizontalmente, asi que un sprite mas alto que la celda crece
+     * hacia arriba en vez de deformarse.
+     */
+    private void dibujarSpriteProporcional(Graphics2D g, Image sprite, int x, int y, int tile) {
+        int anchoOriginal = sprite.getWidth(null);
+        int altoOriginal = sprite.getHeight(null);
+        if (anchoOriginal <= 0 || altoOriginal <= 0) {
+            g.drawImage(sprite, x, y, tile, tile, null);
+            return;
+        }
+        int ancho = tile;
+        int alto = Math.round(tile * (float) altoOriginal / anchoOriginal);
+
+        // Sprites mucho mas altos que anchos (como el jugador) se limitan a esta
+        // altura relativa; si no, se verian gigantes ocupando varias celdas. Se
+        // reduce el ancho en la misma proporcion para no perder el aspecto.
+        int alturaMaxima = Math.round(tile * ALTURA_MAXIMA_RELATIVA);
+        if (alto > alturaMaxima) {
+            ancho = Math.round(tile * ((float) alturaMaxima / alto));
+            alto = alturaMaxima;
+        }
+
+        int dx = x + (tile - ancho) / 2;
+        int dy = y + tile - alto;
+        g.drawImage(sprite, dx, dy, ancho, alto, null);
     }
 
     /** Texto opcional sobre la entidad (p. ej. la resistencia de la caja fragil). */
