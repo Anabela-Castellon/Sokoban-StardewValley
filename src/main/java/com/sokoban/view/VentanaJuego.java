@@ -41,13 +41,13 @@ public class VentanaJuego extends JFrame implements Observer {
         setSize(1000, 700);                        // tamano al restaurar desde maximizado
         setExtendedState(JFrame.MAXIMIZED_BOTH);   // abrir en pantalla completa (maximizada)
 
-        this.panelHud = new PanelHud(controlador);
+        this.panelHud = new PanelHud(controlador, this::mostrarInstrucciones, this::volverAlMenu);
         this.panelTablero = new PanelTablero(controlador);
 
-        // El juego (HUD + tablero) vive en una carta; el menu de inicio en otra.
+        // El juego (tablero + HUD lateral) vive en una carta; el menu de inicio en otra.
         JPanel panelJuego = new JPanel(new BorderLayout());
-        panelJuego.add(panelHud, BorderLayout.NORTH);
         panelJuego.add(panelTablero, BorderLayout.CENTER);
+        panelJuego.add(panelHud, BorderLayout.EAST);
 
         PanelInicio panelInicio = new PanelInicio(
                 this::jugar,
@@ -89,6 +89,11 @@ public class VentanaJuego extends JFrame implements Observer {
             cartas.show(raiz, "juego");
             requestFocusInWindow();
         }
+    }
+
+    /** Vuelve al menu principal sin cerrar la aplicacion (boton "Salir" del HUD). */
+    private void volverAlMenu() {
+        cartas.show(raiz, "menu");
     }
 
     private void mostrarInstrucciones() {

@@ -31,8 +31,10 @@ public class PanelTablero extends JPanel {
     private static final int TILE_BASE = 72;
     /** Los items se dibujan a este porcentaje de la celda (un poco mas chicos). */
     private static final float ESCALA_ITEM = 0.95f;
-    private static final Color FONDO = new Color(28, 28, 28);
-    private static final Color OCULTO = new Color(18, 18, 18);
+    /** Grosor del marco de piedra que rodea el tablero. */
+    private static final int MARCO = 28;
+    private static final Color FONDO = new Color(46, 34, 23);
+    private static final Color OCULTO = new Color(24, 18, 12);
 
     private final transient Controlador controlador;
 
@@ -60,13 +62,20 @@ public class PanelTablero extends JPanel {
 
         int columnas = tablero.getColumnas();
         int filas = tablero.getFilas();
-        int tile = Math.max(1, Math.min(getWidth() / columnas, getHeight() / filas));
-        int offsetX = (getWidth() - tile * columnas) / 2;
-        int offsetY = (getHeight() - tile * filas) / 2;
+        int anchoDisponible = Math.max(1, getWidth() - 2 * MARCO);
+        int altoDisponible = Math.max(1, getHeight() - 2 * MARCO);
+        int tile = Math.max(1, Math.min(anchoDisponible / columnas, altoDisponible / filas));
+        int offsetX = MARCO + (anchoDisponible - tile * columnas) / 2;
+        int offsetY = MARCO + (altoDisponible - tile * filas) / 2;
 
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setFont(new Font("SansSerif", Font.BOLD, Math.max(10, tile / 2)));
+
+        TemaStardew.dibujarMarcoPiedra(g,
+                offsetX - MARCO, offsetY - MARCO,
+                tile * columnas + 2 * MARCO, tile * filas + 2 * MARCO,
+                MARCO);
 
         Nivel nivel = controlador.getNivelActual();
         Posicion posJugador = tablero.getJugador().getPosicion();
